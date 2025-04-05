@@ -1,8 +1,8 @@
 #include <Uefi.h>
-#include <Library/UefiApplicationEntryPoint.h>
 #include <Library/UefiLib.h>
+#include <Library/UefiApplicationEntryPoint.h>
+#include <Library/UefiBootServicesTableLib.h>
 #include <Library/RngLib.h>
-#include <Library/TimerLib.h>
 
 EFI_STATUS
 EFIAPI
@@ -48,8 +48,7 @@ UefiMain (
         } else {
           SystemTable->ConOut->SetAttribute(SystemTable->ConOut, EFI_TEXT_ATTR(EFI_LIGHTRED, EFI_BLACK));
           Print(L"\nPlease do not use computers.\n");
-         // MicroSecondDelay(2000000);
-          SystemTable->BootServices->Stall(4000000);
+          gBS->Stall(3000000);
           SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
         }
       } else if (Key.UnicodeChar == CHAR_BACKSPACE) {

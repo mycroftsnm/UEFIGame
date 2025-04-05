@@ -22,4 +22,4 @@
   UefiApplicationEntryPoint
   UefiLib
   RngLib
-  TimerLib
+  

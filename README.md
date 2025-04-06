@@ -13,10 +13,18 @@ Get it right, and the boot continues like nothing ever happened.
 
 ## Demo videos
 <details>
-
+    
 <summary>Running on QEMU</summary>
 
 [Demo on QEMU](https://github.com/user-attachments/assets/f7605ca6-0123-4931-ac4d-57d805c8defd)
+
+</details>
+
+<details>
+    
+<summary>Running on Thinkpad X270</summary>
+
+[Demo on Thinkpad X270](https://github.com/user-attachments/assets/7ca6e67a-fca9-41bb-a67a-3f5280960edc)
 
 </details>
 
@@ -106,3 +114,5 @@ build -p UefiGamePkg/UefiGamePkg.dsc -a X64 -t GCC5 -b DEBUG -m UefiGamePkg/User
 
 
 This will generate a (hopefully) working efi binary at `Build/UefiGamePkg/DEBUG_GCC5/X64/UserEvaluationForIneptness.efi`
+
+

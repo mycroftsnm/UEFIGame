@@ -1,8 +1,15 @@
 
 
 
-# UEFIGame
-**UserEvaluationForIneptness**
+# UserEvaluationForIneptness
+
+Silly toy project made to learn about [EDK II](https://github.com/tianocore/edk2)
+
+It throws you a simple math question — the sum of two random numbers.
+
+Get it wrong, and you'll be mocked and the system shuts down.
+
+Get it right, and the boot continues like nothing ever happened.
 
 ## Demo videos
 <details>
@@ -15,6 +22,26 @@
 
 
 ## Running
+
+### Real Hardware
+#### 1. Copy EFI Application to ESP
+Get `UserEvaluationForIneptness.efi` either from the [release section](https://github.com/mycroftsnm/UEFIGame/releases/) or [build it yourself](#building), then copy it to your `ESP`, which is usually mounted at `/boot` 
+```bash
+sudo cp UserEvaluationForIneptness.efi /boot/EFI/
+```
+#### 2. Create EFI boot entry
+Easiest way is to use `efibootmgr`
+
+```bash
+sudo efibootmgr --create --disk /dev/nvme0n1 --part 1 \ 
+    --loader '\EFI\UserEvaluationForIneptness.efi' \
+    --label "UEFIGame"
+```
+> Adjust `--disk` and `--part` to match your system
+
+#### 3. Reboot and run
+Restart your system and enter the `UEFI Setup` (formerly known as BIOS), look for the boot options section and select the EFI entry you just created
+
 
 ### QEMU + OVFM
 
@@ -37,7 +64,7 @@ mkfs.vfat -F 32 uefi_disk.img
 ```
 
 #### 3. Copy EFI Application
-Get `UserEvaluationForIneptness.efi` either from release section or [build it yourself](#building) and copy it on the virtual disk
+Get `UserEvaluationForIneptness.efi` either from the [release section](https://github.com/mycroftsnm/UEFIGame/releases/) or [build it yourself](#building) and copy it on the virtual disk
 ```bash
 sudo mkdir -p /mnt/uefi_disk
 sudo mount uefi_disk.img /mnt/uefi_disk
@@ -70,7 +97,7 @@ Clone this repo as `UefiGamePkg`
 ```bash
 git clone https://github.com/mycroftsnm/UEFIGame.git UefiGamePkg       
 ```
-#### 3. Build:
+#### 3. Build
 Build command example
 ```bash
 build -p UefiGamePkg/UefiGamePkg.dsc -a X64 -t GCC5 -b DEBUG -m UefiGamePkg/UserEvaluationForIneptness.inf  

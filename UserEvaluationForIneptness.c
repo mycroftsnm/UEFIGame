@@ -66,5 +66,5 @@ UefiMain (
     }
   }
 
-  return EFI_SUCCESS;
+  return EFI_ABORTED;
 }

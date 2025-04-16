@@ -20,6 +20,7 @@ UefiMain (
   EFI_STATUS Status;  
 
   SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
+  SystemTable->ConOut->EnableCursor(SystemTable->ConOut, TRUE);
 
   if (!GetRandomNumber16(&RandomNumber1)) {
     Print(L"Error trying to get random number\n");
@@ -40,6 +41,8 @@ UefiMain (
     Status = SystemTable->ConIn->ReadKeyStroke(SystemTable->ConIn, &Key);
     if (!EFI_ERROR(Status)) {
       if (Key.UnicodeChar == CHAR_CARRIAGE_RETURN) {
+        SystemTable->ConOut->EnableCursor(SystemTable->ConOut, FALSE);
+        Print(L"\n");
         InputBuffer[InputIndex] = L'\0';
         UINT32 UserAnswer = StrDecimalToUintn(InputBuffer);
         if (UserAnswer == Sum) {

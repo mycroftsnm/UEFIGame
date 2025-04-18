@@ -12,7 +12,7 @@
  * Phrases are separated by empty lines.
  * If fails returns a default phrase.
  *
- * @param FileName   Filename (ej: L"\\phrases.txt").
+ * @param FileName   Filename (ej: L"\\EFI\\UEFIGame\\phrases.txt").
  * @return CHAR16*   Pointer to the selected phrase.
  */
 CHAR16* ReadRandomPhraseFromFile(IN CHAR16* FileName)
@@ -119,9 +119,9 @@ UefiMain (
   UINTN           InputIndex;
   EFI_STATUS Status;
 
-  CHAR16 *RandomPhrase = ReadRandomPhraseFromFile(L"\\phrases.txt");
-
   SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
+  CHAR16 *RandomPhrase = ReadRandomPhraseFromFile(L"\\EFI\\UEFIGame\\phrases.txt");
+
   SystemTable->ConOut->EnableCursor(SystemTable->ConOut, TRUE);
 
   if (!GetRandomNumber16(&RandomNumber1)) {

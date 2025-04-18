@@ -49,7 +49,7 @@ sudo mkdir /boot/EFI/UEFIGame
 # Copy the application
 sudo cp UserEvaluationForIneptness.efi /boot/EFI/UEFIGame/
 
-# Optional: Copy phrases file (must be UTF-16 or ASCII encoded)
+# Optional: Copy phrases file (must be UTF-16)
 sudo cp phrases.txt /boot/EFI/UEFIGame/
 ```
 
@@ -93,7 +93,7 @@ Get `UserEvaluationForIneptness.efi` either from the [release section](https://g
 # Copy the application
 cp UserEvaluationForIneptness.efi uefi_disk/EFI/Boot/BOOTX64.efi
 
-# Optional: Copy phrases file (must be UTF-16 or ASCII encoded)
+# Optional: Copy phrases file (must be UTF-16)
 cp phrases.txt uefi_disk/EFI/UEFIGame/
 ```
 
@@ -109,6 +109,18 @@ qemu-system-x86_64 \
 - Replace OVMF path if needed (common alternatives: `/usr/share/OVMF/OVMF_CODE.fd`)  
 - The `BOOTX64.EFI` filename is required for automatic UEFI boot  
    
+
+## Phrases file
+
+### How it works
+The game will choose a random phrase (Reservoir Sampling) from this file as response if the user fails the question.
+If the file is not available or something crashed the game falls back to a default phrase.
+
+### Format
+Nothing fancy, check the example `phrases.txt` provided
+- file must be UTF-16
+- phrases can be multiline
+- phrases are separated by 1 empty line (\n\n)
 
 ## Building 
 #### 1. Environment Setup

@@ -5,7 +5,7 @@
 #include <Library/RngLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Protocol/SimpleFileSystem.h>
-
+#include <Protocol/LoadedImage.h>  // Necesario para EFI_LOADED_IMAGE_PROTOCOL
 /**
  * Reads a UTF-16 file from filesystem and returns a random phrase.
  * A phrase can consist of a single or multiple lines.
@@ -18,29 +18,27 @@
 CHAR16* ReadRandomPhraseFromFile(IN CHAR16* FileName)
 {
     EFI_STATUS                      Status;
-    EFI_HANDLE                      Handle = NULL ;
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem = NULL;
     EFI_FILE_PROTOCOL               *Root = NULL, *File = NULL;
+    EFI_GUID                        gEfiLoadedImageProtocolGuid = EFI_LOADED_IMAGE_PROTOCOL_GUID;
+    EFI_LOADED_IMAGE_PROTOCOL       *LoadedImage = NULL;
     CHAR16                          *SelectedLine = NULL;
     CHAR16                          LineBuffer[420];
     CHAR16                          CurrentChar;
-    UINTN                           HandleSize = sizeof(EFI_HANDLE);
     UINTN                           ReadSize;
     UINTN                           LineLength = 0;
     UINTN                           PhraseCount = 0;
     BOOLEAN                         LastWasNewline = TRUE;
 
-    Status = gBS->LocateHandle(
-      ByProtocol,
-      &gEfiSimpleFileSystemProtocolGuid,
-      NULL,
-      &HandleSize,
-      &Handle
+    Status = gBS->HandleProtocol(
+        gImageHandle,
+        &gEfiLoadedImageProtocolGuid,
+        (VOID**)&LoadedImage
     );
     if (EFI_ERROR(Status)) goto default_phrase;
 
     Status = gBS->HandleProtocol(
-      Handle,
+      LoadedImage->DeviceHandle,
       &gEfiSimpleFileSystemProtocolGuid,
       (VOID**)&FileSystem
     );

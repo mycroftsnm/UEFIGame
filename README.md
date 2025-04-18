@@ -31,23 +31,39 @@ Get it right, and the boot continues like nothing ever happened.
 
 ## Running
 
+
+
 ### Real Hardware
-#### 1. Copy EFI Application to ESP
-Get `UserEvaluationForIneptness.efi` either from the [release section](https://github.com/mycroftsnm/UEFIGame/releases/) or [build it yourself](#building), then copy it to your `ESP`, which is usually mounted at `/boot` 
+#### 1. Get the EFI Application
+   - Download `UserEvaluationForIneptness.efi` from [releases](https://github.com/mycroftsnm/UEFIGame/releases/)
+   - Or [build from source](#building)
+     
+#### 2. Copy EFI Application and phrases file to ESP
+> `ESP` is typically mounted at `/boot` or `/efi` [reference](https://wiki.archlinux.org/title/EFI_system_partition#Typical_mount_points)
+
+> Example `phrases.txt` are provided in repo root
 ```bash
-sudo cp UserEvaluationForIneptness.efi /boot/EFI/
+# Create directory structure
+sudo mkdir /boot/EFI/UEFIGame
+
+# Copy the application
+sudo cp UserEvaluationForIneptness.efi /boot/EFI/UEFIGame/
+
+# Optional: Copy phrases file (must be UTF-16 or ASCII encoded)
+sudo cp phrases.txt /boot/EFI/UEFIGame/
 ```
-#### 2. Create EFI boot entry
+
+#### 3. Create EFI boot entry
 Easiest way is to use `efibootmgr`
 
 ```bash
 sudo efibootmgr --create --disk /dev/nvme0n1 --part 1 \ 
-    --loader '\EFI\UserEvaluationForIneptness.efi' \
+    --loader '\EFI\UEFIGame\UserEvaluationForIneptness.efi' \
     --label "UEFIGame"
 ```
 > Adjust `--disk` and `--part` to match your system
 
-#### 3. Reboot and run
+#### 4. Reboot and run
 Restart your system and enter the `UEFI Setup` (formerly known as BIOS), look for the boot options section and select the EFI entry you just created
 
 
@@ -63,30 +79,30 @@ sudo apt install qemu-system-x86 ovmf
 sudo dnf install qemu edk2-ovmf
 ```
 
-#### 2. Prepare Virtual Disk (FAT32 ESP)
+#### 2. Prepare Virtual FAT Filesystem
+Qemu can emulate a virtual drive with a FAT filesystem. It works by prepending fat: to a directory name. [reference](https://en.wikibooks.org/wiki/QEMU/Devices/Storage)
 ```bash
-# Create 64MB image (adjust 'count' for size)
-dd if=/dev/zero of=uefi_disk.img bs=1M count=64 status=progress
-# Format as FAT32 (UEFI requirement)
-mkfs.vfat -F 32 uefi_disk.img
+# Create directory structure
+mkdir -p uefi_disk/EFI/UEFIGame
 ```
 
-#### 3. Copy EFI Application
+#### 3. Copy EFI Application and phrases file
 Get `UserEvaluationForIneptness.efi` either from the [release section](https://github.com/mycroftsnm/UEFIGame/releases/) or [build it yourself](#building) and copy it on the virtual disk
+> Example `phrases.txt` are provided in repo root
 ```bash
-sudo mkdir -p /mnt/uefi_disk
-sudo mount uefi_disk.img /mnt/uefi_disk
-sudo mkdir -p /mnt/uefi_disk/EFI/BOOT
-sudo cp Build/UefiGamePkg/DEBUG_GCC5/X64/UserEvaluationForIneptness.efi /mnt/uefi_disk/EFI/BOOT/BOOTX64.EFI
-sudo umount /mnt/uefi_disk
+# Copy the application
+cp UserEvaluationForIneptness.efi uefi_disk/EFI/Boot/BOOTX64.efi
+
+# Optional: Copy phrases file (must be UTF-16 or ASCII encoded)
+cp phrases.txt uefi_disk/EFI/UEFIGame/
 ```
 
 #### 4. Launch QEMU
 ```bash
 qemu-system-x86_64 \
     -drive if=pflash,format=raw,readonly=on,file=/usr/share/edk2/x64/OVMF_CODE.4m.fd \
-    -drive file=uefi_disk.img,format=raw,if=virtio \
-    -cpu qemu64,+rdrand\
+    -drive file=fat:rw:./uefi_disk,format=raw,if=virtio \
+    -cpu qemu64,+rdrand
 ```
 
 **Notes**:  
@@ -113,6 +129,6 @@ build -p UefiGamePkg/UefiGamePkg.dsc -a X64 -t GCC5 -b DEBUG -m UefiGamePkg/User
 > The `-m` part is useful to avoid building all `MdeModulePkg` modules.
 
 
-This will generate a (hopefully) working efi binary at `Build/UefiGamePkg/DEBUG_GCC5/X64/UserEvaluationForIneptness.efi`
+This will generate a (hopefully) working efi binary at `Build/UefiGame/DEBUG_GCC5/X64/UefiGamePkg/UserEvaluationForIneptness/OUTPUT/UserEvaluationForIneptness.efi`
 
 

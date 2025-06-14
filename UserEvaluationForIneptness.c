@@ -22,11 +22,11 @@ CHAR16* ReadRandomPhraseFromFile(IN CHAR16* FileName)
     EFI_FILE_PROTOCOL               *Root = NULL, *File = NULL;
     EFI_GUID                        gEfiLoadedImageProtocolGuid = EFI_LOADED_IMAGE_PROTOCOL_GUID;
     EFI_LOADED_IMAGE_PROTOCOL       *LoadedImage = NULL;
-    CHAR16                          *SelectedLine = NULL;
-    CHAR16                          LineBuffer[420];
+    CHAR16                          *SelectedPhrase = NULL;
+    CHAR16                          PhraseBuffer[420];
     CHAR16                          CurrentChar;
     UINTN                           ReadSize;
-    UINTN                           LineLength = 0;
+    UINTN                           PhraseLength = 0;
     UINTN                           PhraseCount = 0;
     BOOLEAN                         LastWasNewline = TRUE;
 
@@ -59,7 +59,7 @@ CHAR16* ReadRandomPhraseFromFile(IN CHAR16* FileName)
 
       if (CurrentChar == L'\n') {
         if (LastWasNewline) {
-          LineBuffer[LineLength] = L'\0';
+          PhraseBuffer[PhraseLength] = L'\0';
           PhraseCount++;
 
           UINT16 Rand;
@@ -67,41 +67,41 @@ CHAR16* ReadRandomPhraseFromFile(IN CHAR16* FileName)
           if (EFI_ERROR(Status)) goto default_phrase;
 
           if ((Rand % PhraseCount) == 0) {
-              if (SelectedLine) FreePool(SelectedLine);
-              SelectedLine = AllocateCopyPool((LineLength + 1) * sizeof(CHAR16), LineBuffer);
+              if (SelectedPhrase) FreePool(SelectedPhrase);
+              SelectedPhrase = AllocateCopyPool((PhraseLength + 1) * sizeof(CHAR16), PhraseBuffer);
           }
-          LineLength = 0;
+          PhraseLength = 0;
         }
         else {
-          if (LineLength < ARRAY_SIZE(LineBuffer) - 1) {
-              LineBuffer[LineLength++] = L'\r';
-              LineBuffer[LineLength++] = L'\n';
+          if (PhraseLength < ARRAY_SIZE(PhraseBuffer) - 1) {
+              PhraseBuffer[PhraseLength++] = L'\r';
+              PhraseBuffer[PhraseLength++] = L'\n';
           }
         }
         LastWasNewline = TRUE;
       }
       else {
         LastWasNewline = FALSE;
-        if (LineLength < ARRAY_SIZE(LineBuffer) - 1) {
-            LineBuffer[LineLength++] = CurrentChar;
+        if (PhraseLength < ARRAY_SIZE(PhraseBuffer) - 1) {
+            PhraseBuffer[PhraseLength++] = CurrentChar;
         }
       }
     }
-    if (LineLength > 0) {
-      LineBuffer[LineLength] = L'\0';
+    if (PhraseLength > 0) {
+      PhraseBuffer[PhraseLength] = L'\0';
       PhraseCount++;
       UINT16 Rand;
       Status = GetRandomNumber16(&Rand);
       if (!EFI_ERROR(Status) && (Rand % PhraseCount) == 0) {
-        if (SelectedLine) FreePool(SelectedLine);
-        SelectedLine = AllocateCopyPool((LineLength + 1) * sizeof(CHAR16), LineBuffer);
+        if (SelectedPhrase) FreePool(SelectedPhrase);
+        SelectedPhrase = AllocateCopyPool((PhraseLength + 1) * sizeof(CHAR16), PhraseBuffer);
       }
     }
 
   default_phrase:
     if (File) File->Close(File);
     if (Root) Root->Close(Root);
-    return SelectedLine ? SelectedLine : L"Please do not use computers.\n";
+    return SelectedPhrase ? SelectedPhrase : L"Please do not use computers.\n";
 }
 
 EFI_STATUS

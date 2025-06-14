@@ -104,6 +104,28 @@ CHAR16* ReadRandomPhraseFromFile(IN CHAR16* FileName)
     return SelectedPhrase ? SelectedPhrase : L"Please do not use computers.\n";
 }
 
+/**
+ * Counts the number of lines in a phrase.
+ * Lines are separated by \r\n sequences.
+ *
+ * @param Phrase   Pointer to the phrase string.
+ * @return UINTN   Number of lines in the phrase.
+ */
+UINTN CountLinesInPhrase(IN CHAR16* Phrase)
+{
+    UINTN   LineCount = 0;
+    UINTN   Index = 0;
+
+    while (Phrase[Index+1] != L'\0') {
+        if (Phrase[Index] == L'\r' && Phrase[Index + 1] == '\n') {
+            LineCount++;
+        }
+        Index++;
+    }
+
+    return LineCount;
+}
+
 EFI_STATUS
 EFIAPI
 UefiMain (
@@ -117,10 +139,12 @@ UefiMain (
   UINT32          Sum = 0;
   CHAR16          InputBuffer[10];
   UINTN           InputIndex;
+  UINTN           WaitTime = 1;
   EFI_STATUS Status;
 
   SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
   CHAR16 *RandomPhrase = ReadRandomPhraseFromFile(L"\\EFI\\UEFIGame\\phrases.txt");
+  WaitTime = MAX(WaitTime, CountLinesInPhrase(RandomPhrase));
 
   SystemTable->ConOut->EnableCursor(SystemTable->ConOut, TRUE);
 
@@ -153,7 +177,7 @@ UefiMain (
         } else {
           SystemTable->ConOut->SetAttribute(SystemTable->ConOut, EFI_TEXT_ATTR(EFI_LIGHTRED, EFI_BLACK));
           Print(L"%s\n", RandomPhrase);
-          gBS->Stall(3000000);
+          gBS->Stall(WaitTime * 1000000);
           SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
         }
       } else if (Key.UnicodeChar == CHAR_BACKSPACE) {

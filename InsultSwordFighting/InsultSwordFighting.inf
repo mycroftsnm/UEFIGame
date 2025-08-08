@@ -1,0 +1,24 @@
+## @file
+#  UEFI Insult Sword Fighting
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = InsultSwordFighting
+  FILE_GUID                      = 42C1276C-2E60-4D47-B573-70FD2AEF1B75
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = UefiMain
+
+[Sources.X64]
+  InsultSwordFighting.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  UefiApplicationEntryPoint
+  UefiLib
+  RngLib

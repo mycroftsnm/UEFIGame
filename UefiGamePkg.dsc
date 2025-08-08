@@ -8,4 +8,5 @@
 
 [Components.X64]
   UefiGamePkg/UserEvaluationForIneptness.inf
+  UefiGamePkg/InsultSwordFighting/InsultSwordFighting.inf
 

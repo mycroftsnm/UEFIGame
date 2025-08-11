@@ -1,0 +1,25 @@
+## @file
+#  UEFI 'game', turns off the computer if the user fails to answer the question
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = UserEvaluationForIneptness
+  FILE_GUID                      = B725C217-640A-40C6-A1C5-3ECA9162BDA5
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = UefiMain
+
+[Sources.X64]
+  UserEvaluationForIneptness.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  UefiApplicationEntryPoint
+  UefiLib
+  RngLib
+  

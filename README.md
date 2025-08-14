@@ -5,8 +5,12 @@ Silly toy project made to learn about [EDK II](https://github.com/tianocore/edk2
 Consists of multiple modules, each implementing a mini-game that can run in a UEFI environment.
 
 * **User Evaluation For Ineptness**: Presents a simple math question, the sum of two random numbers from 0 to 99, if your answer is incorrect the system mocks you and shuts down.
+      <img width="697" height="385" alt="image" src="https://github.com/user-attachments/assets/46e6d61d-feb5-4d54-97dd-460518189bf1" />
+
 
 * **Insult Sword Fighting**: Monkey island inspired. Choose the correct comeback to continue booting.
+      <img width="697" height="385" alt="image" src="https://github.com/user-attachments/assets/89dad2f7-9d19-40ff-b932-5f9ae4cbdfbc" />
+
 
 ## Demo videos
 <details>

@@ -104,63 +104,54 @@ CHAR16* ReadRandomPhraseFromFile(IN CHAR16* FileName)
     return SelectedPhrase ? SelectedPhrase : L"Please do not use computers.\n";
 }
 
-/**
- * Counts the number of lines in a phrase.
- * Lines are separated by \r\n sequences.
- *
- * @param Phrase   Pointer to the phrase string.
- * @return UINTN   Number of lines in the phrase.
- */
-UINTN CountLinesInPhrase(IN CHAR16* Phrase)
-{
-    UINTN   LineCount = 0;
-    UINTN   Index = 0;
 
-    while (Phrase[Index+1] != L'\0') {
-        if (Phrase[Index] == L'\r' && Phrase[Index + 1] == '\n') {
-            LineCount++;
-        }
-        Index++;
-    }
-
-    return LineCount;
-}
-
-void ParseInsult(CHAR16 *raw_text, CHAR16 **insult, CHAR16 **options, UINTN *option_count) {
+void ParseInsult(IN CHAR16 *raw_text, OUT CHAR16 **insult, OUT CHAR16 ***options, OUT UINTN *option_count) {
     UINTN line_start = 0;
     UINTN line_end = 0;
-    UINTN line_index = 0;
     while (raw_text[line_end] != L'\0') {
       if (raw_text[line_end] == L'\n') {
-          if (line_index == 0) {
+          UINTN len = line_end - line_start;
+          if (*insult == NULL) {
               // First line is the insult
-              UINTN insult_length = line_end - line_start;
-              StrnCpyS(*insult, insult_length + 1, &raw_text[line_start], insult_length);
+              *insult = AllocateZeroPool((len + 1) * sizeof(CHAR16));
+              StrnCpyS(*insult, len + 1, &raw_text[line_start], len);
           } else {
-              // Following lines are responses
-              UINTN option_length = line_end - line_start;
-              StrnCpyS(options[line_index - 1], option_length + 1, &raw_text[line_start], option_length);
+            // Following lines are responses
+            UINTN oldSize = (*option_count) * sizeof(CHAR16*);
+            UINTN newSize = ( (*option_count) + 1 ) * sizeof(CHAR16*);
+
+            if (*options == NULL) {
+                *options = (CHAR16**) AllocateZeroPool(newSize);
+            } else {
+                *options = (CHAR16**) ReallocatePool(oldSize, newSize, *options);
+            }
+            (*options)[*option_count] = AllocateZeroPool((len + 1) * sizeof(CHAR16));
+            StrnCpyS((*options)[*option_count], len + 1, &raw_text[line_start], len);
+            (*option_count)++;
           }
-          line_index++;
-          line_end += 1;
-          line_start = line_end;
-      } else {
-          line_end++;
-      }
+          line_start = line_end + 1;
+        }
+      line_end++;
     }
-    *option_count = line_index - 1;
 }
 
 
-void Shuffle(UINTN *idxs, UINTN n) {
-  for (UINTN i = n - 1; i > 0; i--) {
-    UINT16 rand;
-    GetRandomNumber16(&rand);
-    UINTN j = rand % (i + 1);
-    UINTN tmp = idxs[i];
-    idxs[i] = idxs[j];
-    idxs[j] = tmp;
+UINTN* GetRandomIndexes(UINTN n) {
+    UINTN *indexes = AllocateZeroPool(n * sizeof(UINTN));
+    if (!indexes) return NULL;
+
+    for (UINTN i = 0; i < n; i++) {
+        indexes[i] = i;
     }
+    for (UINTN i = n - 1; i > 0; i--) {
+        UINT16 rand;
+        GetRandomNumber16(&rand);
+        UINTN j = rand % (i + 1);
+        UINTN tmp = indexes[i];
+        indexes[i] = indexes[j];
+        indexes[j] = tmp;
+    }
+    return indexes;
 }
 
 EFI_STATUS
@@ -171,38 +162,42 @@ UefiMain (
 )
 {
     EFI_INPUT_KEY Key = {0};
-    UINTN Selected = 0;
-    UINTN i;
 
-    CHAR16 *options[4];
-    for (UINTN k = 0; k < 4; k++) {
-        options[k] = AllocateZeroPool(128 * sizeof(CHAR16));
-    }
-
-    CHAR16 *insult = AllocateZeroPool(256 * sizeof(CHAR16));
+    UINTN option_count = 0;
+    CHAR16 **options = NULL;
+    CHAR16 *insult = NULL;
 
     CHAR16 *raw_text = ReadRandomPhraseFromFile(L"\\EFI\\UEFIGame\\insults.txt");
 
+    UINTN Columns, Rows;
+    SystemTable->ConOut->QueryMode(SystemTable->ConOut, SystemTable->ConOut->Mode->Mode, &Columns, &Rows);
+
+
     ParseInsult(
-        raw_text,
-        &insult,
-        options,
-        &i
+      raw_text,
+      &insult,
+      &options,
+      &option_count
     );
 
-    UINTN indexes[4] = {0, 1, 2, 3};
-
-    Shuffle(indexes, 4);
+    UINTN insult_len = StrLen(insult);
+    UINTN start_col = 0;
+    if (insult_len < Columns/2) {
+        start_col = Columns/2 - insult_len;
+    }
 
     SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
+    SystemTable->ConOut->SetCursorPosition(SystemTable->ConOut, start_col, 0);
 
-    Print(L"%s\n", insult);
+    Print(L"- %s\n", insult);
+
+    UINTN *indexes = GetRandomIndexes(option_count);
+    UINTN Selected = 0;
 
     SystemTable->ConOut->SetAttribute(SystemTable->ConOut, EFI_TEXT_ATTR(EFI_MAGENTA, EFI_BLACK));
-
     while (1) {
         SystemTable->ConOut->SetCursorPosition(SystemTable->ConOut, 0, 4);
-        for (i = 0; i < 4; i++) {
+        for (UINTN i = 0; i < option_count; i++) {
             if (i == Selected) {
                 SystemTable->ConOut->SetAttribute(SystemTable->ConOut, EFI_TEXT_ATTR(EFI_LIGHTMAGENTA, EFI_BLACK));
                 Print(L"> %s\n", options[indexes[i]]);
@@ -217,7 +212,7 @@ UefiMain (
         if (Key.ScanCode == SCAN_UP && Selected > 0) {
             Selected--;
         }
-        else if (Key.ScanCode == SCAN_DOWN && Selected < 4 - 1) {
+        else if (Key.ScanCode == SCAN_DOWN && Selected < option_count - 1) {
             Selected++;
         }
         else if (Key.UnicodeChar == CHAR_CARRIAGE_RETURN) {
@@ -229,6 +224,5 @@ UefiMain (
             break;
         }
     }
-
     return EFI_ABORTED;
 }

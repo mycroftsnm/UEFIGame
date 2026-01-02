@@ -77,15 +77,16 @@ void InitMap() {
 
     while (CurrentY < MAP_HEIGHT) {
         // Tunnel logic following a target X
-
-        CurrentY++; // Dig Down
         Dig(CurrentX, CurrentY);
+        CurrentY++; // Dig Down
+        
+        if (CurrentY >= MAP_HEIGHT) break;
 
         if (CurrentX == TargetX) {
-        INTN TunelDir = GetRandom(100); // Randomness
-        if (TunelDir >= 50) continue; // 50% chance to keep straight
-
-        INTN amount = GetRandom(MAP_WIDTH / 4) + 1; // 50% chance to turn around
+            INTN TunelDir = GetRandom(100); // Randomness
+            if (TunelDir >= 50) continue; // 50% chance to keep straight
+            
+            INTN amount = GetRandom(MAP_WIDTH / 4) + 1; // 50% chance to turn around
             if (TunelDir < 25) { // Left
                 TargetX = MAX(0, CurrentX - amount);
             } else { // Right
@@ -137,10 +138,10 @@ void Render(INTN ScrollOffset, INTN PlayerX, INTN PlayerY){
             }
 
             if (y + ScrollOffset == MAP_HEIGHT - 1) { // Goal Row
-                gST->ConOut->SetCursorPosition(gST->ConOut, GoalX - 7, y);
                 gST->ConOut->SetAttribute(gST->ConOut, COLOR_GOAL);
-                gST->ConOut->OutputString(gST->ConOut, L"CONTINUE BOOT");
-            }
+                gST->ConOut->SetCursorPosition(gST->ConOut, MAX(0,GoalX - 3), y);    
+                gST->ConOut->OutputString(gST->ConOut, L" BOOT! ");
+                        }
 
             // Next row
             MapRowPtr += MAP_WIDTH;
@@ -212,22 +213,23 @@ UefiMain (
         // Colisiones
         if (GameMap[ScrollOffset + PlayerY][PlayerX] == CHAR_WALL) GameOver = TRUE;
         if (MapEnded && PlayerY >= VIEWPORT_HEIGHT - 1) {
-                // Win Condition
-                gST->ConOut->SetAttribute(gST->ConOut, EFI_WHITE);
-                gST->ConOut->ClearScreen(gST->ConOut);
-                Print(L"\n\n    SYSTEM BOOT SUCCESFUL.    \n");
-                gBS->Stall(2000000);
-                break;
-            }
-        if (GameOver && MapEnded == FALSE) {
-             gST->ConOut->SetAttribute(gST->ConOut, COLOR_DEATH);
-             gST->ConOut->SetCursorPosition(gST->ConOut, PlayerX, PlayerY);
-             Print(L"X");
-             gBS->Stall(1000000);
-             gST->RuntimeServices->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
+            // Win Condition
+            gST->ConOut->SetAttribute(gST->ConOut, EFI_WHITE);
+            gST->ConOut->ClearScreen(gST->ConOut);
+            Print(L"\n\n    SYSTEM BOOT SUCCESFUL.    \n");
+            gBS->Stall(2000000);
+            break;
         }
 
-        // Update 
+        if (GameOver && MapEnded == FALSE) {
+            gST->ConOut->SetAttribute(gST->ConOut, COLOR_DEATH);
+            gST->ConOut->SetCursorPosition(gST->ConOut, PlayerX, PlayerY);
+            Print(L"X");
+            gBS->Stall(1000000);
+            gST->RuntimeServices->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
+        }
+
+        // Update
         Render(ScrollOffset, PlayerX, PlayerY);
     }
     gBS->CloseEvent(TimerEvent);

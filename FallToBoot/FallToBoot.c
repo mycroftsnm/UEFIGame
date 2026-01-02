@@ -139,9 +139,9 @@ void Render(INTN ScrollOffset, INTN PlayerX, INTN PlayerY){
 
             if (y + ScrollOffset == MAP_HEIGHT - 1) { // Goal Row
                 gST->ConOut->SetAttribute(gST->ConOut, COLOR_GOAL);
-                gST->ConOut->SetCursorPosition(gST->ConOut, MAX(0,GoalX - 3), y);    
+                gST->ConOut->SetCursorPosition(gST->ConOut, MIN(MAX(0, GoalX - 3), MAP_WIDTH - 7), y);    
                 gST->ConOut->OutputString(gST->ConOut, L" BOOT! ");
-                        }
+            }
 
             // Next row
             MapRowPtr += MAP_WIDTH;

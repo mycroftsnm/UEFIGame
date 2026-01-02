@@ -1,0 +1,24 @@
+## @file
+#  UEFI FallToBoot escape game
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = FallToBoot
+  FILE_GUID                      = 42C1276C-2E60-4D47-B553-70FD2AEF1B75
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = UefiMain
+
+[Sources.X64]
+  FallToBoot.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  UefiApplicationEntryPoint
+  UefiLib
+  RngLib

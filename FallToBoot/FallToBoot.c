@@ -212,10 +212,10 @@ UefiMain (
         }
 
         // Scrolling Logic
-        if (ScrollOffset + VIEWPORT_HEIGHT < MAP_HEIGHT) {
-            ScrollOffset++; // Scroll normal
+        if (PlayerY < (VIEWPORT_HEIGHT / 5) || ScrollOffset >= (MAP_HEIGHT - VIEWPORT_HEIGHT)) {
+            PlayerY++;
         } else {
-            PlayerY++; 
+            ScrollOffset++;
         }
 
         // Collision Detection

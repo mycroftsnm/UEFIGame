@@ -221,6 +221,10 @@ UefiMain (
             break;
         }
 
+        // Update
+        Render(ScrollOffset, PlayerX, PlayerY);
+
+        // Mark Game Over
         if (GameOver && MapEnded == FALSE) {
             gST->ConOut->SetAttribute(gST->ConOut, COLOR_DEATH);
             gST->ConOut->SetCursorPosition(gST->ConOut, PlayerX, PlayerY);
@@ -228,9 +232,6 @@ UefiMain (
             gBS->Stall(1000000);
             gST->RuntimeServices->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
         }
-
-        // Update
-        Render(ScrollOffset, PlayerX, PlayerY);
     }
     gBS->CloseEvent(TimerEvent);
     gST->ConOut->EnableCursor(gST->ConOut, TRUE);

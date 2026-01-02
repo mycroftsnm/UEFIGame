@@ -37,7 +37,7 @@ UINT16 GetRandom(UINT16 Max) {
 }
 
 void Dig(INTN center_x, INTN center_y) {
-    // Dig a 7x5 area centered at (center_x, center_y)
+    // Dig a 9x5 area centered at (center_x, center_y)
     for (INTN y = center_y - 2; y <= center_y + 2; y++) {
         for (INTN x = center_x - 4; x <= center_x + 4; x++) {
             if (x >= 0 && x < MAP_WIDTH && y >= 0 && y < MAP_HEIGHT) {

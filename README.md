@@ -2,11 +2,13 @@
 
 Silly toy project made to learn about [EDK II](https://github.com/tianocore/edk2)
 
-Consists of multiple modules, each implementing a mini-game that can run in a UEFI environment.
+Consists of multiple modules, each implementing a mini-game that can run in a UEFI environment and following the premise of " Win -> Boot, Lose -> Shutdown"
 
 * **User Evaluation For Ineptness**: Presents a simple math question, the sum of two random numbers from 0 to 99, if your answer is incorrect the system mocks you and shuts down.
 
 * **Insult Sword Fighting**: Monkey island inspired. Choose the correct comeback to continue booting.
+  
+* **Fall To Boot**: Vertical scrolling procedurally generated tunnel. Reach the bottom or you'll *Fail* to Boot.
 
 ## Demo videos
 <details>
@@ -21,7 +23,7 @@ Consists of multiple modules, each implementing a mini-game that can run in a UE
 [Demo on Thinkpad X270](https://github.com/user-attachments/assets/7ca6e67a-fca9-41bb-a67a-3f5280960edc)
 </details>
 
-## Aclaration
+## Note
 
 In this README, **Insult Sword Fighting** is used as the example module throughout. You can substitute any mention of it and its files with any other module.
 

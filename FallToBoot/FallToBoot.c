@@ -137,7 +137,7 @@ UefiMain (
     EFI_INPUT_KEY Key;
     
     INTN PlayerX = MAP_WIDTH / 2;
-    INTN PlayerY = 2;
+    INTN PlayerY = 0;
     INTN ScrollOffset = 0;
     INTN Direction = DIR_NONE;
     BOOLEAN MapEnded = FALSE;

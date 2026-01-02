@@ -12,7 +12,8 @@ Consists of multiple modules, each implementing a mini-game that can run in a UE
       <img width="697" height="385" alt="image" src="https://github.com/user-attachments/assets/89dad2f7-9d19-40ff-b932-5f9ae4cbdfbc" />
       
 * **Fall To Boot**: Vertical scrolling procedurally generated tunnel. Reach the bottom or you'll *Fail* to Boot.
-      <img width="693" height="475" alt="image" src="https://github.com/user-attachments/assets/4c4e16ca-759b-485a-b657-20dff9022892" />
+      <img width="682" height="484" alt="FallToBoot" src="https://github.com/user-attachments/assets/4e99944e-39fa-46b6-a7c3-b3a8b64df5b1" />
+
 
 ## Demo videos
 <details>
@@ -21,10 +22,18 @@ Consists of multiple modules, each implementing a mini-game that can run in a UE
 [Demo on QEMU](https://github.com/user-attachments/assets/f7605ca6-0123-4931-ac4d-57d805c8defd)
 </details>
 
+
+
 <details>
 <summary>User Evaluation For Ineptness Running on Thinkpad X270</summary>
     
 [Demo on Thinkpad X270](https://github.com/user-attachments/assets/7ca6e67a-fca9-41bb-a67a-3f5280960edc)
+</details>
+
+<details>
+<summary>Fall To Boot Running on QEMU</summary>
+      
+[FallToBoot-qemu.webm](https://github.com/user-attachments/assets/29238f84-a107-42a0-ba7a-64de89b2be20)
 </details>
 
 ## Note

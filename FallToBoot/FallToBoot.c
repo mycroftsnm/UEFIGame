@@ -28,6 +28,7 @@
 
 CHAR16 GameMap[MAP_HEIGHT][MAP_WIDTH];
 UINTN  CurrentAttr = 9999; // Cache
+INTN   GoalX;
 
 UINT16 GetRandom(UINT16 Max) {
     UINT16 Rand;
@@ -64,8 +65,8 @@ void InitMap() {
     while (CurrentY < MAP_HEIGHT) {
         // Tunnel logic following a target X
 
-        Dig(CurrentX, CurrentY);
         CurrentY++; // Dig Down
+        Dig(CurrentX, CurrentY);
 
         if (CurrentX == TargetX) {
         INTN TunelDir = GetRandom(100); // Randomness
@@ -83,6 +84,7 @@ void InitMap() {
             CurrentX--;
         }
     }
+    GoalX = CurrentX;
 }
 
 CHAR16 LineBuffer[MAP_WIDTH + 1];
@@ -121,11 +123,16 @@ void Render(INTN ScrollOffset, INTN PlayerX, INTN PlayerY){
                 gST->ConOut->OutputString(gST->ConOut, LineBuffer);
             }
 
+            if (y + ScrollOffset == MAP_HEIGHT - 1) { // Goal Row
+                gST->ConOut->SetCursorPosition(gST->ConOut, GoalX - 7, y);
+                gST->ConOut->SetAttribute(gST->ConOut, COLOR_GOAL);
+                gST->ConOut->OutputString(gST->ConOut, L"CONTINUE BOOT");
+            }
+
             // Next row
             MapRowPtr += MAP_WIDTH;
         }
 }
-
 
 EFI_STATUS
 EFIAPI

@@ -12,11 +12,10 @@
 
 #define CHAR_WALL   L'#' 
 #define CHAR_EMPTY  L' ' 
-#define CHAR_PLAYER L'@' 
-#define CHAR_GOAL   L'P'
+#define CHAR_PLAYER L'*' 
+#define WIN_MESSAGE  L" BOOT! "
 
 #define COLOR_WALL   EFI_LIGHTGRAY
-#define COLOR_EMPTY  EFI_BLACK
 #define COLOR_PLAYER EFI_LIGHTMAGENTA
 #define COLOR_GOAL   EFI_YELLOW
 #define COLOR_DEATH  EFI_RED
@@ -27,7 +26,6 @@
 
 
 CHAR16 GameMap[MAP_HEIGHT][MAP_WIDTH];
-UINTN  CurrentAttr = 9999; // Cache
 INTN   GoalX;
 
 UINT16 GetRandom(UINT16 Max) {
@@ -74,24 +72,27 @@ void InitMap() {
     INTN CurrentX = MAP_WIDTH / 2;
     INTN TargetX = CurrentX;
 
-
     while (CurrentY < MAP_HEIGHT) {
-        // Tunnel logic following a target X
         Dig(CurrentX, CurrentY);
         CurrentY++; // Dig Down
         
         if (CurrentY >= MAP_HEIGHT) break;
+        
+        // Waypoint reached
+        if (CurrentX == TargetX) { 
+            INTN TunelDir = GetRandom(100);
 
-        if (CurrentX == TargetX) {
-            INTN TunelDir = GetRandom(100); // Randomness
-            if (TunelDir >= 50) continue; // 50% chance to keep straight
+            // 50% chance to keep straight
+            if (TunelDir >= 50) continue;
             
-            INTN amount = GetRandom(MAP_WIDTH / 4) + 1; // 50% chance to turn around
-            if (TunelDir < 25) { // Left
-                TargetX = MAX(0, CurrentX - amount);
-            } else { // Right
-                TargetX = MIN(MAP_WIDTH, CurrentX + amount);
+            // 50% chance to change direction
+            INTN Amount = GetRandom(MAP_WIDTH / 4) + 1; 
+            if (TunelDir < 25) {                        // Left
+                TargetX = MAX(0, CurrentX - Amount);
+            } else {                                    // Right
+                TargetX = MIN(MAP_WIDTH - 1, CurrentX + Amount);
             }
+        // Move towards TargetX
         } else if (CurrentX < TargetX) {
             CurrentX++;
         } else if (CurrentX > TargetX) {
@@ -103,7 +104,7 @@ void InitMap() {
 
 CHAR16 LineBuffer[MAP_WIDTH + 1];
 
-void Render(INTN ScrollOffset, INTN PlayerX, INTN PlayerY){
+void Render(INTN ScrollOffset, INTN PlayerX, INTN PlayerY, BOOLEAN GameOver) {
     CHAR16 *MapRowPtr = &GameMap[ScrollOffset][0];
 
     gST->ConOut->SetAttribute(gST->ConOut, COLOR_WALL);
@@ -123,9 +124,18 @@ void Render(INTN ScrollOffset, INTN PlayerX, INTN PlayerY){
                 // Map before Player
                 gST->ConOut->OutputString(gST->ConOut, LineBuffer);
                 
-                // Player
-                gST->ConOut->SetAttribute(gST->ConOut, COLOR_PLAYER);
-                CHAR16 PlayerStr[2] = {CHAR_PLAYER, L'\0'};
+                // Player (alive or dead)
+                CHAR16 PlayerStr[2];
+                INTN PlayerColor;
+                if (GameOver) {
+                    PlayerStr[0] = L'X';
+                    PlayerColor = COLOR_DEATH;
+                } else {
+                    PlayerStr[0] = CHAR_PLAYER;
+                    PlayerColor = COLOR_PLAYER;
+                }
+                PlayerStr[1] = L'\0';
+                gST->ConOut->SetAttribute(gST->ConOut, PlayerColor);
                 gST->ConOut->OutputString(gST->ConOut, PlayerStr);
                 
                 // Map after Player
@@ -140,7 +150,7 @@ void Render(INTN ScrollOffset, INTN PlayerX, INTN PlayerY){
             if (y + ScrollOffset == MAP_HEIGHT - 1) { // Goal Row
                 gST->ConOut->SetAttribute(gST->ConOut, COLOR_GOAL);
                 gST->ConOut->SetCursorPosition(gST->ConOut, MIN(MAX(0, GoalX - 3), MAP_WIDTH - 7), y);    
-                gST->ConOut->OutputString(gST->ConOut, L" BOOT! ");
+                gST->ConOut->OutputString(gST->ConOut, WIN_MESSAGE);
             }
 
             // Next row
@@ -161,12 +171,11 @@ UefiMain (
     INTN PlayerY = 0;
     INTN ScrollOffset = 0;
     INTN Direction = DIR_NONE;
-    BOOLEAN MapEnded = FALSE;
 
     gST->ConOut->ClearScreen(gST->ConOut);
     InitMap();
 
-    Render(ScrollOffset, PlayerX, PlayerY);
+    Render(ScrollOffset, PlayerX, PlayerY, FALSE);
     while (Direction == DIR_NONE) {
         // Wait for initial input
         gST->ConIn->ReadKeyStroke(gST->ConIn, &Key);
@@ -182,7 +191,7 @@ UefiMain (
     UINTN Index;
     BOOLEAN GameOver = FALSE;
 
-    while (!GameOver) {
+    while (TRUE) {
         // Timer Sync
         gBS->WaitForEvent(1, &TimerEvent, &Index);
 
@@ -206,29 +215,22 @@ UefiMain (
         if (ScrollOffset + VIEWPORT_HEIGHT < MAP_HEIGHT) {
             ScrollOffset++; // Scroll normal
         } else {
-            MapEnded = TRUE;
             PlayerY++; 
         }
 
-        // Colisiones
-        if (GameMap[ScrollOffset + PlayerY][PlayerX] == CHAR_WALL) GameOver = TRUE;
-        if (MapEnded && PlayerY >= VIEWPORT_HEIGHT - 1) {
-            // Win Condition
-            gST->ConOut->SetAttribute(gST->ConOut, EFI_WHITE);
-            gST->ConOut->ClearScreen(gST->ConOut);
-            Print(L"\n\n    SYSTEM BOOT SUCCESFUL.    \n");
-            gBS->Stall(2000000);
+        // Collision Detection
+        if (GameMap[ScrollOffset + PlayerY][PlayerX] == CHAR_WALL) {
+            GameOver = TRUE;
+        } else if (PlayerY >= VIEWPORT_HEIGHT - 1) {
+            // Win -> Boot
             break;
         }
 
-        // Update
-        Render(ScrollOffset, PlayerX, PlayerY);
+        // Update Display
+        Render(ScrollOffset, PlayerX, PlayerY, GameOver);
 
-        // Mark Game Over
-        if (GameOver && MapEnded == FALSE) {
-            gST->ConOut->SetAttribute(gST->ConOut, COLOR_DEATH);
-            gST->ConOut->SetCursorPosition(gST->ConOut, PlayerX, PlayerY);
-            Print(L"X");
+        // Game Over -> Shutdown
+        if (GameOver) {
             gBS->Stall(1000000);
             gST->RuntimeServices->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
         }
@@ -238,5 +240,5 @@ UefiMain (
     gST->ConOut->SetAttribute(gST->ConOut, EFI_LIGHTGRAY | EFI_BACKGROUND_BLACK);
     gST->ConOut->ClearScreen(gST->ConOut);
 
-    return EFI_ABORTED;
+    return EFI_ABORTED; // Continue to Boot
 }

@@ -38,9 +38,22 @@ UINT16 GetRandom(UINT16 Max) {
 }
 
 void Dig(INTN center_x, INTN center_y) {
-    // Dig a 9x5 area centered at (center_x, center_y)
-    for (INTN y = center_y - 2; y <= center_y + 2; y++) {
-        for (INTN x = center_x - 4; x <= center_x + 4; x++) {
+    // Dig a [11;9;7]x[5;3;1] area centered at (center_x, center_y)
+    INTN radius_y;
+    INTN radius_x;
+    if (center_y < MAP_HEIGHT - VIEWPORT_HEIGHT * 3) {
+        radius_y = 2;
+        radius_x = 5;
+    } else if (center_y < MAP_HEIGHT - VIEWPORT_HEIGHT) {
+        radius_y = 1;
+        radius_x = 4;
+    } else {
+        radius_y = 0;
+        radius_x = 3;
+
+    }
+    for (INTN y = center_y - radius_y; y <= center_y + radius_y; y++) {
+        for (INTN x = center_x - radius_x; x <= center_x + radius_x; x++) {
             if (x >= 0 && x < MAP_WIDTH && y >= 0 && y < MAP_HEIGHT) {
                 GameMap[y][x] = CHAR_EMPTY;
             }

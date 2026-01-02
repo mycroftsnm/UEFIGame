@@ -9,8 +9,10 @@ Consists of multiple modules, each implementing a mini-game that can run in a UE
 
 
 * **Insult Sword Fighting**: Monkey island inspired. Choose the correct comeback to continue booting.
-      <img width="697" height="385" alt="image" src="https://github.com/user-attachments/assets/89dad2f7-9d19-40ff-b932-5f9ae4cbdfbc" />  
+      <img width="697" height="385" alt="image" src="https://github.com/user-attachments/assets/89dad2f7-9d19-40ff-b932-5f9ae4cbdfbc" />
+      
 * **Fall To Boot**: Vertical scrolling procedurally generated tunnel. Reach the bottom or you'll *Fail* to Boot.
+      <img width="693" height="475" alt="image" src="https://github.com/user-attachments/assets/4c4e16ca-759b-485a-b657-20dff9022892" />
 
 ## Demo videos
 <details>

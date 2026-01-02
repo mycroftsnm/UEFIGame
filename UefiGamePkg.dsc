@@ -9,4 +9,5 @@
 [Components.X64]
   UefiGamePkg/UserEvaluationForIneptness/UserEvaluationForIneptness.inf
   UefiGamePkg/InsultSwordFighting/InsultSwordFighting.inf
+  UefiGamePkg/FallToBoot/FallToBoot.inf
 

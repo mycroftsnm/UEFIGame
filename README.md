@@ -15,7 +15,7 @@ Consists of multiple modules, each implementing a mini-game that can run in a UE
       <img width="682" height="484" alt="FallToBoot" src="https://github.com/user-attachments/assets/4e99944e-39fa-46b6-a7c3-b3a8b64df5b1" />
 
 * **Age Verification**: Leisure Suit Larry inspired. Answer 80s pop culture trivia to prove you're an adult. Get it wrong and the system decides you're too young to use this computer.
-
+        <img width="681" height="387" alt="image" src="https://github.com/user-attachments/assets/71997207-eb1d-4f55-8b6c-e31500aa987c" />
 
 ## Demo videos
 <details>

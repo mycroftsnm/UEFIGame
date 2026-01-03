@@ -7,6 +7,10 @@
 #include <Protocol/SimpleFileSystem.h>
 #include <Protocol/LoadedImage.h>
 
+#define QUESTIONS_TO_WIN 3
+#define QUESTIONS_TO_LOSE 3
+#define MAX_QUESTIONS 6
+
 /**
  * Reads a UTF-16 file from filesystem and returns a random phrase.
  * A phrase can consist of a single or multiple lines.
@@ -99,11 +103,17 @@ CHAR16* ReadRandomPhraseFromFile(IN CHAR16* FileName)
   default_phrase:
     if (File) File->Close(File);
     if (Root) Root->Close(Root);
-    return SelectedPhrase ? SelectedPhrase : L"What is the answer to life?\nForty-two\nSeven\nPi\nNone\n";
+    return SelectedPhrase ? SelectedPhrase : NULL;
 }
 
 
 void ParseQuestion(IN CHAR16 *raw_text, OUT CHAR16 **question, OUT CHAR16 ***options, OUT UINTN *option_count) {
+    *question = NULL;
+    *options = NULL;
+    *option_count = 0;
+
+    if (raw_text == NULL) return;
+
     UINTN line_start = 0;
     UINTN line_end = 0;
     while (raw_text[line_end] != L'\0') {
@@ -133,6 +143,15 @@ void ParseQuestion(IN CHAR16 *raw_text, OUT CHAR16 **question, OUT CHAR16 ***opt
     }
 }
 
+void FreeQuestion(CHAR16 *question, CHAR16 **options, UINTN option_count) {
+    if (question) FreePool(question);
+    if (options) {
+        for (UINTN i = 0; i < option_count; i++) {
+            if (options[i]) FreePool(options[i]);
+        }
+        FreePool(options);
+    }
+}
 
 UINTN* GetRandomIndexes(UINTN n) {
     UINTN *indexes = AllocateZeroPool(n * sizeof(UINTN));
@@ -152,37 +171,32 @@ UINTN* GetRandomIndexes(UINTN n) {
     return indexes;
 }
 
-EFI_STATUS
-EFIAPI
-UefiMain (
-  IN EFI_HANDLE        ImageHandle,
-  IN EFI_SYSTEM_TABLE  *SystemTable
-)
-{
+/**
+ * Ask one question. Returns TRUE if answered correctly, FALSE otherwise.
+ */
+BOOLEAN AskQuestion(IN EFI_SYSTEM_TABLE *SystemTable, IN UINTN QuestionNum) {
     EFI_INPUT_KEY Key = {0};
-
     UINTN option_count = 0;
     CHAR16 **options = NULL;
     CHAR16 *question = NULL;
+    BOOLEAN result = FALSE;
 
     CHAR16 *raw_text = ReadRandomPhraseFromFile(L"\\EFI\\UEFIGame\\questions.txt");
-    CHAR16 *fail_message = ReadRandomPhraseFromFile(L"\\EFI\\UEFIGame\\failmessages.txt");
+    if (raw_text == NULL) {
+        raw_text = L"What is the answer to life?\nForty-two\nSeven\nPi\nNone\n";
+    }
 
-    UINTN Columns, Rows;
-    SystemTable->ConOut->QueryMode(SystemTable->ConOut, SystemTable->ConOut->Mode->Mode, &Columns, &Rows);
+    ParseQuestion(raw_text, &question, &options, &option_count);
 
-    ParseQuestion(
-      raw_text,
-      &question,
-      &options,
-      &option_count
-    );
+    if (question == NULL || option_count < 2) {
+        return TRUE; // Skip bad questions
+    }
 
     SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
 
-    // Title
+    // Title with question number
     SystemTable->ConOut->SetAttribute(SystemTable->ConOut, EFI_TEXT_ATTR(EFI_YELLOW, EFI_BLACK));
-    Print(L"\r\n  === AGE VERIFICATION ===\r\n\r\n");
+    Print(L"\r\n  === AGE VERIFICATION (%d/%d) ===\r\n\r\n", QuestionNum, MAX_QUESTIONS);
 
     // Question
     SystemTable->ConOut->SetAttribute(SystemTable->ConOut, EFI_TEXT_ATTR(EFI_WHITE, EFI_BLACK));
@@ -213,20 +227,117 @@ UefiMain (
             Selected++;
         }
         else if (Key.UnicodeChar == CHAR_CARRIAGE_RETURN) {
-            if (indexes[Selected] == 0) {
-                // Correct! Continue boot
-                SystemTable->ConOut->SetAttribute(SystemTable->ConOut, EFI_TEXT_ATTR(EFI_GREEN, EFI_BLACK));
-                Print(L"\r\n  Welcome, adult user. Booting...\r\n");
-                break;
-            } else {
-                // Wrong - you're a kid, shutdown
-                SystemTable->ConOut->SetAttribute(SystemTable->ConOut, EFI_TEXT_ATTR(EFI_RED, EFI_BLACK));
-                Print(L"\r\n  %s\r\n", fail_message);
-                gBS->Stall(3000000);
-                SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
-            }
+            result = (indexes[Selected] == 0);
             break;
         }
     }
+
+    if (indexes) FreePool(indexes);
+    FreeQuestion(question, options, option_count);
+
+    return result;
+}
+
+EFI_STATUS
+EFIAPI
+UefiMain (
+  IN EFI_HANDLE        ImageHandle,
+  IN EFI_SYSTEM_TABLE  *SystemTable
+)
+{
+    UINTN correct = 0;
+    UINTN wrong = 0;
+    UINTN question_num = 0;
+    BOOLEAN last_was_correct = FALSE;
+    BOOLEAN had_correct_before_wrong = FALSE;
+
+    // Pre-load messages
+    CHAR16 *fail_message = ReadRandomPhraseFromFile(L"\\EFI\\UEFIGame\\failmessages.txt");
+    CHAR16 *success_message = ReadRandomPhraseFromFile(L"\\EFI\\UEFIGame\\successmessages.txt");
+
+    if (fail_message == NULL) {
+        fail_message = L"Nice try, kid. Come back when you're older.";
+    }
+    if (success_message == NULL) {
+        success_message = L"Clearly you lived through the 80s. Welcome, elder millennial.";
+    }
+
+    while (question_num < MAX_QUESTIONS) {
+        question_num++;
+
+        BOOLEAN answered_correctly = AskQuestion(SystemTable, question_num);
+
+        if (answered_correctly) {
+            correct++;
+            SystemTable->ConOut->SetAttribute(SystemTable->ConOut, EFI_TEXT_ATTR(EFI_GREEN, EFI_BLACK));
+            if (had_correct_before_wrong && !last_was_correct) {
+                // They got one right, then wrong, now right again - suspicious!
+                UINT16 snark;
+                GetRandomNumber16(&snark);
+                switch (snark % 3) {
+                    case 0:
+                        Print(L"\r\n  Correct! (%d/%d) ...did you have to call your mom?\r\n", correct, QUESTIONS_TO_WIN);
+                        break;
+                    case 1:
+                        Print(L"\r\n  Correct! (%d/%d) ...you didn't Google that on THIS computer.\r\n", correct, QUESTIONS_TO_WIN);
+                        break;
+                    default:
+                        Print(L"\r\n  Correct! (%d/%d) ...that took a suspiciously long time.\r\n", correct, QUESTIONS_TO_WIN);
+                        break;
+                }
+            } else {
+                Print(L"\r\n  Correct! (%d/%d)\r\n", correct, QUESTIONS_TO_WIN);
+            }
+            if (!last_was_correct && correct > 0) {
+                had_correct_before_wrong = FALSE; // Reset after calling them out
+            }
+            last_was_correct = TRUE;
+        } else {
+            wrong++;
+            SystemTable->ConOut->SetAttribute(SystemTable->ConOut, EFI_TEXT_ATTR(EFI_RED, EFI_BLACK));
+            if (last_was_correct) {
+                had_correct_before_wrong = TRUE;
+            }
+            Print(L"\r\n  Wrong! (%d/%d failures)\r\n", wrong, QUESTIONS_TO_LOSE);
+            last_was_correct = FALSE;
+        }
+
+        // Check win condition
+        if (correct >= QUESTIONS_TO_WIN) {
+            SystemTable->ConOut->SetAttribute(SystemTable->ConOut, EFI_TEXT_ATTR(EFI_GREEN, EFI_BLACK));
+            Print(L"\r\n  %s\r\n", success_message);
+            Print(L"\r\n  Booting...\r\n");
+            gBS->Stall(2000000);
+            return EFI_ABORTED; // Continue to boot
+        }
+
+        // Check lose condition
+        if (wrong >= QUESTIONS_TO_LOSE) {
+            SystemTable->ConOut->SetAttribute(SystemTable->ConOut, EFI_TEXT_ATTR(EFI_RED, EFI_BLACK));
+            Print(L"\r\n  %s\r\n", fail_message);
+            gBS->Stall(2000000);
+            SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
+        }
+
+        // Check if it's impossible to win (not enough questions left)
+        UINTN remaining = MAX_QUESTIONS - question_num;
+        if (correct + remaining < QUESTIONS_TO_WIN) {
+            SystemTable->ConOut->SetAttribute(SystemTable->ConOut, EFI_TEXT_ATTR(EFI_RED, EFI_BLACK));
+            Print(L"\r\n  Not enough questions left. You can't possibly be an adult.\r\n");
+            Print(L"\r\n  %s\r\n", fail_message);
+            gBS->Stall(2000000);
+            SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
+        }
+
+        // Next question prompt
+        if (question_num < MAX_QUESTIONS) {
+            SystemTable->ConOut->SetAttribute(SystemTable->ConOut, EFI_TEXT_ATTR(EFI_YELLOW, EFI_BLACK));
+            Print(L"\r\n  Next question...\r\n");
+            gBS->Stall(1200000);
+        }
+    }
+
+    // Should not reach here, but just in case
+    SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
     return EFI_ABORTED;
 }

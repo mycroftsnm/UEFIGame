@@ -10,4 +10,5 @@
   UefiGamePkg/UserEvaluationForIneptness/UserEvaluationForIneptness.inf
   UefiGamePkg/InsultSwordFighting/InsultSwordFighting.inf
   UefiGamePkg/FallToBoot/FallToBoot.inf
+  UefiGamePkg/AgeVerification/AgeVerification.inf
 

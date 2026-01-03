@@ -9,7 +9,7 @@
 
 #define QUESTIONS_TO_WIN 3
 #define QUESTIONS_TO_LOSE 3
-#define MAX_QUESTIONS 6
+#define MAX_QUESTIONS (QUESTIONS_TO_LOSE + QUESTIONS_TO_WIN - 1)
 
 /**
  * Reads a UTF-16 file from filesystem and returns a random phrase.
@@ -262,7 +262,7 @@ UefiMain (
         success_message = L"Clearly you lived through the 80s. Welcome, elder millennial.";
     }
 
-    while (question_num < MAX_QUESTIONS) {
+    while (question_num <= MAX_QUESTIONS) {
         question_num++;
 
         BOOLEAN answered_correctly = AskQuestion(SystemTable, question_num);
@@ -314,16 +314,6 @@ UefiMain (
         // Check lose condition
         if (wrong >= QUESTIONS_TO_LOSE) {
             SystemTable->ConOut->SetAttribute(SystemTable->ConOut, EFI_TEXT_ATTR(EFI_RED, EFI_BLACK));
-            Print(L"\r\n  %s\r\n", fail_message);
-            gBS->Stall(2000000);
-            SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
-        }
-
-        // Check if it's impossible to win (not enough questions left)
-        UINTN remaining = MAX_QUESTIONS - question_num;
-        if (correct + remaining < QUESTIONS_TO_WIN) {
-            SystemTable->ConOut->SetAttribute(SystemTable->ConOut, EFI_TEXT_ATTR(EFI_RED, EFI_BLACK));
-            Print(L"\r\n  Not enough questions left. You can't possibly be an adult.\r\n");
             Print(L"\r\n  %s\r\n", fail_message);
             gBS->Stall(2000000);
             SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);

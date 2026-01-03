@@ -14,6 +14,8 @@ Consists of multiple modules, each implementing a mini-game that can run in a UE
 * **Fall To Boot**: Vertical scrolling procedurally generated tunnel. Reach the bottom or you'll *Fail* to Boot.
       <img width="682" height="484" alt="FallToBoot" src="https://github.com/user-attachments/assets/4e99944e-39fa-46b6-a7c3-b3a8b64df5b1" />
 
+* **Age Verification**: Leisure Suit Larry inspired. Answer 80s pop culture trivia to prove you're an adult. Get it wrong and the system decides you're too young to use this computer.
+        <img width="681" height="387" alt="image" src="https://github.com/user-attachments/assets/71997207-eb1d-4f55-8b6c-e31500aa987c" />
 
 ## Demo videos
 <details>
@@ -66,6 +68,8 @@ sudo cp insults.txt /boot/EFI/UEFIGame/
 > Insult Sword Fighting needs `insults.txt` to be present in `/esp/EFI/UEFIGame`, example `insults.txt` provided
 
 > User Evaluation For Ineptess needs `phrases.txt` to be present in `/esp/EFI/UEFIGame`, example `phrases.txt` provided
+
+> Age Verification needs `questions.txt` to be present in `/esp/EFI/UEFIGame`, example `questions.txt` provided
 
 #### 3. Create EFI boot entry
 Easiest way is to use `efibootmgr`
@@ -170,6 +174,39 @@ The game will choose a random insult and its responses.
     Another insult
     Correct comeback
     ...
+</details>
+
+<details>
+<summary>Age Verification</summary>
+
+#### questions.txt
+This file is optional. If not present, the game uses a fallback question.
+Example provided: [`questions.txt`](./AgeVerification/questions.txt)
+
+##### How it works
+The game will choose a random trivia question (Reservoir Sampling) about 70s/80s pop culture.
+
+##### Format
+    Question text
+    Correct answer
+    Wrong answer
+    Wrong answer
+    Wrong answer
+
+    Another question
+    Correct answer
+    ...
+
+- File must be UTF-16
+- First answer after the question is always the correct one (answers are shuffled on display)
+- Questions are separated by 1 empty line
+
+#### failmessages.txt
+This file is optional. Contains snarky messages shown when you fail.
+Example provided: [`failmessages.txt`](./AgeVerification/failmessages.txt)
+
+- File must be UTF-16
+- Messages are separated by 1 empty line
 </details>
 
 ## Building

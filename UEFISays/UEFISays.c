@@ -17,22 +17,23 @@ typedef struct {
 } BUTTON;
 
 BUTTON Buttons[4];
-CHAR16 *SolidRow = L"\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588";
+CHAR16 *SolidRow = L"\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588";
 
 void InitButtons() {
     Buttons[0] = (BUTTON){25, 14,  EFI_LIGHTRED,   EFI_RED};    // left
-    Buttons[1] = (BUTTON){47, 14,  EFI_LIGHTBLUE,  EFI_BLUE};   // right
-    Buttons[2] = (BUTTON){36, 8,   EFI_LIGHTGREEN, EFI_GREEN};  // up
-    Buttons[3] = (BUTTON){36, 14,  EFI_YELLOW,     EFI_BROWN};  // down 
+    Buttons[1] = (BUTTON){51, 14,  EFI_LIGHTBLUE,  EFI_BLUE};   // right
+    Buttons[2] = (BUTTON){38, 8,   EFI_LIGHTGREEN, EFI_GREEN};  // up
+    Buttons[3] = (BUTTON){38, 14,  EFI_YELLOW,     EFI_BROWN};  // down 
 }
 
+// Draw button block (11x5)
 void DrawButtonBlock(BUTTON *Btn, BOOLEAN IsOn) {
     UINTN Color = IsOn ? Btn->OnColor : Btn->OffColor;
     UINTN StartY = Btn->Y - 2; // 5 rows high
     
     gST->ConOut->SetAttribute(gST->ConOut, Color);
     for (INTN i = 0; i < 5; i++) {
-        gST->ConOut->SetCursorPosition(gST->ConOut, Btn->X - 4, StartY + i);
+        gST->ConOut->SetCursorPosition(gST->ConOut, Btn->X - 5, StartY + i);
         gST->ConOut->OutputString(gST->ConOut, SolidRow);
     }
 }
@@ -93,20 +94,20 @@ UefiMain (
     UINTN Index;
 
     // Wait for a key press to start
-    gST->ConOut->SetCursorPosition(gST->ConOut, 25, 2);
+    gST->ConOut->SetCursorPosition(gST->ConOut, 27, 2);
     gST->ConOut->SetAttribute(gST->ConOut, EFI_WHITE);
     gST->ConOut->OutputString(gST->ConOut, L"Press any key to start...");
 
     gBS->WaitForEvent(1, &gST->ConIn->WaitForKey, &Index);
     gST->ConIn->ReadKeyStroke(gST->ConIn, &Key);
-    
-    gST->ConOut->SetCursorPosition(gST->ConOut, 25, 2);
+
+    gST->ConOut->SetCursorPosition(gST->ConOut, 27, 2);
     gST->ConOut->OutputString(gST->ConOut, L"                            "); // Clear line    
     gBS->Stall(250000);
     
     while (CurrentLength < TargetLength) {
         // CPU turn
-        gST->ConOut->SetCursorPosition(gST->ConOut, 32, 2);
+        gST->ConOut->SetCursorPosition(gST->ConOut, 34, 2);
         gST->ConOut->SetAttribute(gST->ConOut, EFI_LIGHTCYAN);
         gST->ConOut->OutputString(gST->ConOut, L"UEFI SAYS");
 
@@ -116,7 +117,7 @@ UefiMain (
         FlashSequence(Sequence, CurrentLength, TargetLength);
 
         // Player turn
-        gST->ConOut->SetCursorPosition(gST->ConOut, 32, 2);
+        gST->ConOut->SetCursorPosition(gST->ConOut, 34, 2);
         gST->ConOut->SetAttribute(gST->ConOut, EFI_LIGHTMAGENTA);
         gST->ConOut->OutputString(gST->ConOut, L"YOUR TURN");
 

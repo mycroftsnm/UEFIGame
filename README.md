@@ -42,6 +42,12 @@ Consists of multiple modules, each implementing a mini-game that can run in a UE
 [FallToBoot-qemu.webm](https://github.com/user-attachments/assets/29238f84-a107-42a0-ba7a-64de89b2be20)
 </details>
 
+<details>
+<summary>UEFI Says Running on QEMU</summary>
+      
+[UEFISays-qemu.webm](https://github.com/user-attachments/assets/5be271db-2b4c-4ed5-b786-90212c80c1f3)
+</details>
+
 ## Note
 
 In this README, **Insult Sword Fighting** is used as the example module throughout. You can substitute any mention of it and its files with any other module.

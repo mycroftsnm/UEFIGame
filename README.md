@@ -18,8 +18,7 @@ Consists of multiple modules, each implementing a mini-game that can run in a UE
       <img width="682" height="412" alt="image" src="https://github.com/user-attachments/assets/30713b27-07c1-48c9-a87b-53f9af03bd1e" />
 
 * **UEFI Says**: A memory test... but not for the computer. Simon-like game implementation. Win to boot or fail and shutdown.
-      <img width="682" height="412" alt="image" src="https://github.com/user-attachments/assets/e0ad36cd-ae72-4ce6-aa0b-4a9ab9ea434f" />
-
+        <img width="660" height="480" alt="image" src="https://github.com/user-attachments/assets/084a010a-e5fe-4ed1-b5bd-0d9c1bc44c6d" />
 
 
 ## Demo videos

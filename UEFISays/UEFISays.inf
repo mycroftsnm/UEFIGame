@@ -1,0 +1,24 @@
+## @file
+#  UEFI SimonSay game
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = UEFISays
+  FILE_GUID                      = 99BCC5D2-28A8-46C4-B1C2-E906F9B26575
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = UefiMain
+
+[Sources.X64]
+  UEFISays.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  UefiApplicationEntryPoint
+  UefiLib
+  RngLib

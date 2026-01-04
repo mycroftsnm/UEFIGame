@@ -11,4 +11,5 @@
   UefiGamePkg/InsultSwordFighting/InsultSwordFighting.inf
   UefiGamePkg/FallToBoot/FallToBoot.inf
   UefiGamePkg/AgeVerification/AgeVerification.inf
+  UefiGamePkg/UEFISays/UEFISays.inf
 

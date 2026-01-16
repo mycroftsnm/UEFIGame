@@ -8,6 +8,7 @@
 
 #define BLOCK_CHAR L"\u2588" // █
 #define MAX_SEQUENCE_LENGTH 10
+#define MIN_SEQUENCE_LENGTH 4
 
 typedef struct {
     UINTN X;
@@ -88,7 +89,7 @@ UefiMain (
     EFI_INPUT_KEY Key;
     INTN Sequence[MAX_SEQUENCE_LENGTH];
 
-    INTN TargetLength = 8;//GetRandom(MAX_SEQUENCE_LENGTH - 3) + 4; // 4 steps min
+    INTN TargetLength = GetRandom(MAX_SEQUENCE_LENGTH - MIN_SEQUENCE_LENGTH + 1) + MIN_SEQUENCE_LENGTH;
     INTN CurrentLength = 0;
     INTN PlayerInput = -1;
     UINTN Index;
